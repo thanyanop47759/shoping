@@ -9,11 +9,12 @@ module Api
 
       # สร้างหมวดหมู่
       def create
-        category = Category.new(name: params[:name])
-        if category.save
-          render json: { success: true, category: category }, status: :created
+        result = Category.create_with_name(params[:name])
+
+        if result[:success]
+          render json: result, status: :created
         else
-          render json: { success: false, errors: category.errors.full_messages }, status: :unprocessable_entity
+          render json: { success: false, errors: result[:errors] }, status: :unprocessable_entity
         end
       end
     end

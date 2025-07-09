@@ -1,35 +1,32 @@
 Rails.application.routes.draw do
-  # เรียก devise_for :users ครั้งเดียว และให้อยู่ **นอก** namespace เสมอ
-
   namespace :api do
     namespace :v1 do
-      # Carts resource และ custom action checkout แบบ collection
+      resources :coupons, only: [:index, :create, :show]
+      # ✅ carts controller
       resources :carts do
         collection do
-          post "checkout"
+          post :add_item
+          post :checkout
         end
       end
 
-      # Products resource
+      # ✅ products controller
       resources :products
 
-      # Categories resource
+      # ✅ categories controller
       resources :categories, only: [:index, :create]
 
-      # CartItems resource
+      # ✅ cart_items controller
       resources :cart_items, only: [:create]
 
-      # UserLogs resource
+      # ✅ user_logs controller
       resources :user_logs, only: [:index]
 
-      # Custom routes
+      # ✅ routes พิเศษ
       get "public_products/:user_id", to: "products#public_view"
       post "register", to: "auth#register"
       post "login", to: "auth#login"
       get "admin/user_logs/today", to: "user_logs#today_logins"
-
-      # ลบ post "checkout", to: "checkout#create" ออก
-      # หรือถ้าต้องการให้แยกจาก carts#checkout ต้องเปลี่ยนชื่อ path ให้ไม่ซ้ำกัน
     end
   end
 end

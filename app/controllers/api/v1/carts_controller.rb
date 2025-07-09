@@ -3,25 +3,31 @@ module Api
     class CartsController < ApplicationController
       before_action :authenticate_user
 
+      def add_item
+        cart = @current_user.cart || @current_user.create_cart
+        result = cart.add_item(params[:product_id], params[:quantity] || 1)
+
+        if result[:success]
+          render json: result, status: :ok
+        else
+          render json: { success: false, message: result[:message] || result[:errors] }, status: :unprocessable_entity
+        end
+      end
+
       def checkout
         cart = @current_user.cart
-        if cart.nil? || cart.cart_items.empty?
-          render json: { success: false, message: "Cart is empty" }, status: :unprocessable_entity
+
+        if cart.nil?
+          render json: { success: false, message: "Cart not found" }, status: :unprocessable_entity
           return
         end
 
-        cart.cart_items.destroy_all
-        render json: { success: true, message: "Checkout successful" }
-      end
+        result = cart.checkout(params[:coupon_code])
 
-      private
-
-      def authenticate_user
-        auth_header = request.headers["Authorization"]
-        token = auth_header.present? ? auth_header.split(" ").last : nil
-        @current_user = User.find_by(auth_token: token)
-        unless @current_user
-          render json: { success: false, message: "กรุณาเข้าสู่ระบบก่อน" }, status: :unauthorized
+        if result[:success]
+          render json: result, status: :ok
+        else
+          render json: { success: false, message: result[:message] }, status: :unprocessable_entity
         end
       end
     end

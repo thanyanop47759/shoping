@@ -4,15 +4,8 @@ module Api
       before_action :authenticate_admin
 
       def index
-        logs = UserLog.includes(:user).order(created_at: :desc).limit(100)
-        render json: logs.map { |log|
-          {
-            id: log.id,
-            user_email: log.user.email,
-            action: log.action,
-            time: log.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-          }
-        }
+        logs = UserLog.recent_with_user
+        render json: logs.map(&:as_display_json)
       end
 
       private
